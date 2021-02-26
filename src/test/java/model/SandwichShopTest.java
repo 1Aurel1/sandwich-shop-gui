@@ -31,7 +31,8 @@ public class SandwichShopTest {
         sandwiches.add(sandwich);
 
         SandwichShop sandwichShop = new SandwichShop();
-        Order order = sandwichShop.buildOrder(sandwiches);
+        sandwichShop.setInOrder(sandwiches);
+        Order order = sandwichShop.buildOrder();
         Assert.assertTrue(order.getTotalAmount().equals(10D));
     }
 }

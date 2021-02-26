@@ -1,10 +1,14 @@
 package model;
 
+import client.RestClient;
+import client.SandwichDto;
 import lombok.Data;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static model.SandwichMapper.mapToSandwichDto;
 
 @Data
 public class Sandwich implements IdentifiableModel {
@@ -16,6 +20,14 @@ public class Sandwich implements IdentifiableModel {
     private Double price;
 
     public Sandwich() {
+        initData();
+    }
+
+    private void initData() {
+        id = null;
+        name = null;
+        type = null;
+        price = null;
         ingredients = new HashSet<>();
     }
 
@@ -44,7 +56,9 @@ public class Sandwich implements IdentifiableModel {
     }
 
     public void saveSandwich() {
-
+        RestClient restClient = new RestClient();
+        restClient.createSandwich(mapToSandwichDto(this));
+        initData();
     }
 
     public static String[] sandwichData() {

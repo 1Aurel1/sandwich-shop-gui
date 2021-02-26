@@ -5,7 +5,7 @@ import javax.swing.*;
 public class SandwichStoreApp {
     public static void main(String[] args) {
         SandwichStoreGUI sandwichStoreGUI = new SandwichStoreGUI();
-        sandwichStoreGUI.setTitle("Sandwich store");
+        sandwichStoreGUI.setTitle("client.Sandwich store");
         sandwichStoreGUI.pack();
         sandwichStoreGUI.setVisible(true);
         sandwichStoreGUI.setLocationRelativeTo(null);

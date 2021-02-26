@@ -9,8 +9,6 @@ import model.SandwichType;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Locale;
 
 public class SandwichStoreGUI extends JFrame{
     private JTextArea priceTextArea;
@@ -19,7 +17,6 @@ public class SandwichStoreGUI extends JFrame{
     private JComboBox<String> orderSandwichType;
     private JButton createSandwichButton;
     private JButton addSandwichToOrderButton;
-    private JTextField totalAmount;
     private JTable availableSandwiches;
     private JTable selectedSandwiches;
     private JButton orderButton;
@@ -32,6 +29,7 @@ public class SandwichStoreGUI extends JFrame{
     private JRadioButton mayoBtn;
     private JRadioButton mustardBtn;
     private JTextArea nameSandwich;
+    private JLabel totalAmount;
 
     private ButtonGroup sauceGroup;
     private ButtonGroup fillingGroup;
@@ -42,21 +40,38 @@ public class SandwichStoreGUI extends JFrame{
 
     public SandwichStoreGUI() {
         initilizeVailables();
-
-        Object rowData[][] = { { "Row1-Column1", "Row1-Column2", "Row1-Column3"},
-                { "Row2-Column1", "Row2-Column2", "Row2-Column3"} };
-        Object columnNames[] = { "Column One", "Column Two", "Column Three"};
-        selectedSandwiches.setModel(new DefaultTableModel(rowData, columnNames));
-
         add(contentPane);
     }
 
     private void initilizeVailables() {
         sandwichShop = new SandwichShop();
-
         initNewSandwich();
         initSandwichType(orderSandwichType);
+        loadSandwiches();
+        loadOrdersInUi();
+        addSandwichToOrderButton.addActionListener(this::addSelectedSandwichesToOrder);
+    }
+
+    private void loadSandwiches() {
         availableSandwiches.setModel(new DefaultTableModel(sandwichShop.getSandwichesOnType(SandwichType.DINNER), Sandwich.sandwichData()));
+    }
+
+    private void loadOrdersInUi() {
+        selectedSandwiches.setModel(new DefaultTableModel(sandwichShop.getOrderSandwiches(), Sandwich.sandwichData()));
+        totalAmount.setText(sandwichShop.buildOrder().getTotalAmount().toString());
+    }
+
+    private void addSelectedSandwichesToOrder(ActionEvent actionEvent) {
+        int[] selectedRows = availableSandwiches.getSelectedRows();
+        for (int i = 0; i < selectedRows.length; i++) {
+            Sandwich sandwich = new Sandwich();
+            sandwich.setId(Long.parseLong((String) availableSandwiches.getModel().getValueAt(selectedRows[i], 0)));
+            sandwich.setName((String) availableSandwiches.getModel().getValueAt(selectedRows[i], 1));
+            sandwich.setType(SandwichType.valueOf(((String) availableSandwiches.getModel().getValueAt(selectedRows[i], 2)).toUpperCase()));
+            sandwich.setPrice(Double.parseDouble((String) availableSandwiches.getModel().getValueAt(selectedRows[i], 3)));
+            sandwichShop.addSandwichTOOrder(sandwich);
+        }
+        loadOrdersInUi();
     }
 
     private void initNewSandwich() {
@@ -111,10 +126,10 @@ public class SandwichStoreGUI extends JFrame{
         sandwich.addIngredient(sauce);
         sandwich.addIngredient(filling);
         sandwich.addIngredient(cheese);
-
         System.out.println(sandwich.toString());
-
         sandwich.saveSandwich();
+        loadSandwiches();
+        JOptionPane.showMessageDialog(this, "Created successfully");
     }
 
     private void bindIngredients() {

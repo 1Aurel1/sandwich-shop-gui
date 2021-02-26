@@ -1,11 +1,11 @@
 package model;
 
+import client.RestClient;
+import client.SandwichDto;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 public class SandwichShop {
@@ -15,10 +15,11 @@ public class SandwichShop {
     private List<Sandwich> inOrder;
 
     public SandwichShop() {
-        lunch = new HashSet<>();
-        dinner = new HashSet<>();
+        loadDataFromRest();
         inOrder = new ArrayList<>();
     }
+
+
 
     public void addSandwichTOOrder(Sandwich sandwich) {
         inOrder.add(sandwich);
@@ -28,22 +29,24 @@ public class SandwichShop {
         inOrder.remove(sandwich);
     }
 
-    public Order buildOrder(List<Sandwich> sandwiches) {
+    public Order buildOrder() {
 
         Order order = new Order();
-        order.setSandwiches(sandwiches);
-        order.setTotalAmount(calculateOrderTotalAmount(sandwiches));
+        order.setSandwiches(inOrder);
+        order.setTotalAmount(calculateOrderTotalAmount());
 
         return order;
     }
 
-    private Double calculateOrderTotalAmount(List<Sandwich> sandwiches) {
-        return sandwiches.stream()
+    private Double calculateOrderTotalAmount() {
+        return inOrder.stream()
                 .map(Sandwich::getPrice)
                 .reduce(0D, Double::sum);
     }
 
     public String[][] getSandwichesOnType(SandwichType sandwichType) {
+
+        loadDataFromRest();
 
         switch (sandwichType) {
             case LUNCH:
@@ -55,7 +58,27 @@ public class SandwichShop {
         return null;
     }
 
-    private String[][] convertSandwiches(Set<Sandwich> sandwiches) {
+    private void loadDataFromRest() {
+        RestClient restClient = new RestClient();
+
+        List<SandwichDto> sandwiches = restClient.getSandwiches();
+
+        lunch = sandwiches.stream()
+                .filter(sandwichDto -> sandwichDto.getType() == SandwichType.LUNCH)
+                .map(SandwichMapper::mapToSandwich)
+                .collect(Collectors.toSet());
+
+        dinner = sandwiches.stream()
+                .filter(sandwichDto -> sandwichDto.getType() == SandwichType.DINNER)
+                .map(SandwichMapper::mapToSandwich)
+                .collect(Collectors.toSet());
+    }
+
+    public String[][] getOrderSandwiches() {
+        return convertSandwiches(inOrder);
+    }
+
+    private String[][] convertSandwiches(Collection<Sandwich> sandwiches) {
         List<String[]> list = new ArrayList<>();
         for (Sandwich sandwich : sandwiches) {
             String[] toStringArray = sandwich.toStringArray();
